@@ -1,0 +1,19 @@
+name: Backend CI
+
+on:
+  push:
+    branches: ["dev", "main"]
+  pull_request:
+    branches: ["dev", "main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4         # Step 1: get your code from GitHub
+      - uses: actions/setup-node@v4       # Step 2: setup Node.js
+        with:
+          node-version: "18"
+      - run: npm ci                        # Step 3: install dependencies
+      - run: npm run lint || true          # Step 4: run lint checks
+      - run: npm run build                 # Step 5: build the NestJS app
