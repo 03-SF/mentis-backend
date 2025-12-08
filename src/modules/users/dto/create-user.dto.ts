@@ -1,0 +1,90 @@
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  MaxLength,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
+  IsNumber,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  EducationLevel,
+  Province,
+  Stream,
+} from '../../../common/interfaces/enums';
+
+class StudentInfoDto {
+  @IsEnum(EducationLevel)
+  @IsNotEmpty()
+  currentEducationLevel: EducationLevel;
+
+  @IsString()
+  @IsNotEmpty()
+  grade: string;
+
+  @IsString()
+  @IsOptional()
+  school?: string;
+
+  @IsString()
+  @IsOptional()
+  city?: string;
+
+  @IsEnum(Province)
+  @IsOptional()
+  province?: Province;
+
+  @IsEnum(Stream)
+  @IsOptional()
+  stream?: Stream;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  subjects?: string[];
+
+  @IsNumber()
+  @IsOptional()
+  cgpa?: number;
+
+  @IsNumber()
+  @IsOptional()
+  percentage?: number;
+}
+
+export class CreateUserDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(50)
+  @IsNotEmpty()
+  password: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(50)
+  @IsNotEmpty()
+  firstName: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(50)
+  @IsNotEmpty()
+  lastName: string;
+
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @ValidateNested()
+  @Type(() => StudentInfoDto)
+  @IsNotEmpty()
+  studentInfo: StudentInfoDto;
+}

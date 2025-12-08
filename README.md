@@ -1,98 +1,374 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# MENTIS AI - Backend Server
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+AI-powered career guidance platform for Pakistani students built with NestJS, Express, and MongoDB.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Tech Stack
 
-## Description
+- **Framework**: NestJS 11
+- **Runtime**: Node.js 
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT (Passport)
+- **Validation**: class-validator & class-transformer
+- **Language**: TypeScript
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📁 Project Structure
 
-## Project setup
-
-```bash
-$ npm install
+```
+src/
+├── config/              # Configuration files
+│   ├── app.config.ts
+│   ├── database.config.ts
+│   └── jwt.config.ts
+├── common/              # Shared utilities
+│   ├── decorators/
+│   ├── filters/
+│   ├── guards/
+│   ├── interceptors/
+│   └── interfaces/
+├── modules/             # Feature modules
+│   ├── users/          ✅ Complete
+│   ├── auth/           ⏳ TODO
+│   ├── assessments/    ⏳ TODO
+│   ├── careers/        ⏳ TODO
+│   ├── skills/         ⏳ TODO
+│   ├── recommendations/ ⏳ TODO
+│   ├── learning-paths/ ⏳ TODO
+│   └── institutions/   ⏳ TODO
+├── app.module.ts
+└── main.ts
 ```
 
-## Compile and run the project
+## 🛠️ Setup Instructions
 
+### Prerequisites
+
+- **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
+- **MongoDB** (v6 or higher) - [Download](https://www.mongodb.com/try/download/community)
+- **npm** or **yarn**
+
+### Installation
+
+**1. Install Dependencies**
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cd mentis-ai-backend
+npm install
 ```
 
-## Run tests
+**2. Environment Configuration**
+
+Copy `.env.example` to `.env`:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env
 ```
 
-## Deployment
+Edit `.env` file with your configuration:
+```env
+NODE_ENV=development
+PORT=3001
+MONGODB_URI=mongodb://localhost:27017/mentis-ai
+JWT_SECRET=your-super-secret-key-change-this-in-production
+JWT_EXPIRATION=7d
+JWT_REFRESH_SECRET=your-refresh-secret-change-this-too
+JWT_REFRESH_EXPIRATION=30d
+FRONTEND_URL=http://localhost:3000
+THROTTLE_TTL=60000
+THROTTLE_LIMIT=100
+OPENAI_API_KEY=your-openai-api-key
+```
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+**3. Start MongoDB**
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+⚠️ **CRITICAL: MongoDB MUST be running before starting the server!**
+
+**Option A: Local MongoDB**
+```bash
+# Windows (if installed as service)
+net start MongoDB
+
+# OR run manually
+mongod --dbpath="C:\data\db"
+
+# Linux/Mac
+sudo systemctl start mongod
+```
+
+**Verify MongoDB is running:**
+```bash
+# PowerShell
+Test-NetConnection localhost -Port 27017
+# Should show: TcpTestSucceeded : True
+
+# Command Prompt / Bash
+mongo --eval "db.version()"
+# Should show MongoDB version
+```
+
+**Option B: MongoDB Atlas (Cloud)**
+1. Create free account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Create a new cluster
+3. Get connection string (looks like: `mongodb+srv://username:password@cluster.mongodb.net/`)
+4. Update `MONGODB_URI` in `.env` with your connection string
+
+**4. Run Development Server**
+```bash
+npm run start:dev
+```
+
+✅ **Success!** Server should start at: `http://localhost:3001/api`
+
+You should see:
+```
+🚀 MENTIS AI Backend is running on http://localhost:3001/api
+📚 Environment: development
+```
+
+### Available Scripts
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run start         # Start production server
+npm run start:dev     # Start development server with hot-reload
+npm run start:debug   # Start with debugging
+npm run build         # Build for production
+npm run lint          # Run ESLint
+npm run format        # Format code with Prettier
+npm run test          # Run unit tests
+npm run test:e2e      # Run end-to-end tests
+npm run test:cov      # Run tests with coverage
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## 🔌 API Endpoints
 
-## Resources
+### Health Check
+```
+GET /api          # Server health check
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### Users Module (✅ Implemented)
+```
+GET    /api/users/me              # Get current user profile
+PATCH  /api/users/me              # Update current user
+DELETE /api/users/me              # Delete account
+GET    /api/users/me/dashboard    # Get dashboard stats
+GET    /api/users/:id             # Get user by ID
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Upcoming Modules (⏳ TODO)
 
-## Support
+- **Auth**: `/api/auth/*` - Registration, Login, JWT tokens
+- **Assessments**: `/api/assessments/*` - Psychometric tests
+- **Careers**: `/api/careers/*` - Career exploration
+- **Skills**: `/api/skills/*` - Skill tracking
+- **Recommendations**: `/api/recommendations/*` - AI career matches
+- **Learning Paths**: `/api/learning-paths/*` - Learning resources
+- **Institutions**: `/api/institutions/*` - Pakistani universities
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 🗄️ Database Schema
 
-## Stay in touch
+See [`DATABASE_SCHEMA.md`](../DATABASE_SCHEMA.md) for complete schema documentation.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Key Collections
 
-## License
+1. **users** - Student profiles with Pakistani education context
+2. **assessment_results** - Psychometric test outcomes
+3. **careers** - Career path master data (Pakistani job market)
+4. **skills** - Skill definitions
+5. **user_skills** - Student skill proficiency tracking
+6. **recommendations** - AI-generated career matches
+7. **learning_paths** - Structured learning plans
+8. **institutions** - Pakistani universities/colleges
+9. **labor_market_data** - Job market trends in Pakistan
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 🔒 Authentication
+
+JWT-based authentication with access and refresh tokens.
+
+```typescript
+// Protected route example
+@UseGuards(JwtAuthGuard)
+@Get('protected')
+getProtectedData(@CurrentUser() user) {
+  return user;
+}
+
+// Public route
+@Public()
+@Post('public')
+publicEndpoint() {
+  return 'Accessible without auth';
+}
+```
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Test coverage
+npm run test:cov
+```
+
+## 📝 Code Style
+
+- ESLint for linting
+- Prettier for formatting
+- TypeScript strict mode
+
+```bash
+npm run lint           # Check for issues
+npm run lint -- --fix  # Auto-fix issues
+npm run format         # Format all files
+```
+
+## 🚀 Deployment
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+### Start Production Server
+
+```bash
+npm run start:prod
+```
+
+### Environment Variables for Production
+
+Make sure to update these in production:
+- `NODE_ENV=production`
+- `JWT_SECRET` - Use a strong, unique secret
+- `JWT_REFRESH_SECRET` - Use a different strong secret
+- `MONGODB_URI` - Use your production MongoDB URI
+- `FRONTEND_URL` - Your production frontend URL
+
+## 🔧 Configuration
+
+### CORS
+
+Configured in `main.ts`:
+```typescript
+app.enableCors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+});
+```
+
+### Validation
+
+Global validation pipe automatically validates DTOs:
+```typescript
+app.useGlobalPipes(new ValidationPipe({
+  whitelist: true,
+  forbidNonWhitelisted: true,
+  transform: true,
+}));
+```
+
+### Rate Limiting
+
+Configured in `app.module.ts`:
+- 100 requests per minute per IP by default
+- Customizable per endpoint
+
+## 🐛 Troubleshooting
+
+### ❌ MongoDB Connection Error
+```
+Error: connect ECONNREFUSED 127.0.0.1:27017
+```
+**Solution**: 
+1. Check if MongoDB is running: `Test-NetConnection localhost -Port 27017`
+2. If not, start MongoDB: `net start MongoDB` (Windows) or `sudo systemctl start mongod` (Linux)
+3. Or use MongoDB Atlas cloud database
+
+### ❌ Port Already in Use
+```
+Error: listen EADDRINUSE: address already in use :::3001
+```
+**Solution**: 
+- Change `PORT` in `.env` file, OR
+- Kill the process using port 3001:
+```bash
+# Windows PowerShell
+Get-Process -Id (Get-NetTCPConnection -LocalPort 3001).OwningProcess | Stop-Process
+
+# Linux/Mac
+lsof -ti:3001 | xargs kill
+```
+
+### ❌ Module Not Found
+```
+Error: Cannot find module '@nestjs/mongoose'
+```
+**Solution**: 
+```bash
+npm install
+```
+
+### ❌ JWT Secret Warning
+```
+Warning: No JWT secret provided
+```
+**Solution**: Make sure `.env` file exists and has `JWT_SECRET` set
+
+## 📚 Resources
+
+- [NestJS Documentation](https://docs.nestjs.com)
+- [Mongoose Documentation](https://mongoosejs.com/docs/)
+- [MongoDB Documentation](https://www.mongodb.com/docs)
+- [Passport JWT Documentation](http://www.passportjs.org/packages/passport-jwt/)
+
+## 📄 License
+
+UNLICENSED - Private Project
+
+## 👥 Team
+
+MENTIS AI Development Team
+
+---
+
+## 📊 Current Progress
+
+**✅ Completed:**
+- Base server setup with NestJS
+- MongoDB connection configuration
+- Users module with CRUD operations
+- Configuration management (.env support)
+- Global error handling
+- Request validation
+- Rate limiting
+- CORS configuration
+- Pakistani education system integration (enums for provinces, education levels, streams)
+
+**⏳ In Progress / Next Steps:**
+1. **Auth Module** (HIGH PRIORITY)
+   - JWT strategy implementation
+   - Login/Register endpoints
+   - Password reset functionality
+   - Email verification
+
+2. **Assessments Module**
+   - Psychometric test questions
+   - Scoring algorithms
+   - Results interpretation
+
+3. **Careers Module**
+   - Career database seeding
+   - Search and filtering
+   - Related careers logic
+
+4. **AI Recommendations**
+   - OpenAI integration
+   - Match score calculation
+   - Personalized insights
+
+---
+
+**Status**: 🚧 In Development | **Last Updated**: December 2025
