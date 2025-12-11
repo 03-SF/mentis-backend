@@ -28,8 +28,14 @@ export class UsersService {
     return user;
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return this.userModel.findOne({ email }).select('+password').exec();
+  async findByEmail(email: string, includePassword = false): Promise<User | null> {
+    const query = this.userModel.findOne({ email });
+    if (includePassword) {
+      query.select('+password');
+    } else {
+      query.select('-password');
+    }
+    return query.exec();
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {

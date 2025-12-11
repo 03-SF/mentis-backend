@@ -2,8 +2,11 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import databaseConfig from './config/database.config';
 import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -30,14 +33,20 @@ import { UsersModule } from './modules/users/users.module';
     ]),
 
     // Feature Modules
+    AuthModule,
     UsersModule,
-    // AuthModule,
     // AssessmentsModule,
     // CareersModule,
     // SkillsModule,
     // RecommendationsModule,
     // LearningPathsModule,
     // InstitutionsModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
 })
 export class AppModule {}
