@@ -5,22 +5,16 @@ import {
   MaxLength,
   IsNotEmpty,
   IsOptional,
-  IsEnum,
   IsNumber,
   IsArray,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  EducationLevel,
-  Province,
-  Stream,
-} from '../../../common/interfaces/enums';
 
 class StudentInfoDto {
-  @IsEnum(EducationLevel)
+  @IsString()
   @IsNotEmpty()
-  currentEducationLevel: EducationLevel;
+  currentEducationLevel: string;
 
   @IsString()
   @IsNotEmpty()
@@ -34,13 +28,13 @@ class StudentInfoDto {
   @IsOptional()
   city?: string;
 
-  @IsEnum(Province)
+  @IsString()
   @IsOptional()
-  province?: Province;
+  province?: string;
 
-  @IsEnum(Stream)
+  @IsString()
   @IsOptional()
-  stream?: Stream;
+  stream?: string;
 
   @IsArray()
   @IsString({ each: true })

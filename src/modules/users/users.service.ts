@@ -74,4 +74,29 @@ export class UsersService {
       skillsTracked: 0,
     };
   }
+
+  async getProfile(id: string): Promise<User> {
+    const user = await this.userModel.findById(id).select('-password').exec();
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return user;
+  }
+
+  async updateProfile(id: string, updateData: any): Promise<User> {
+    const user = await this.userModel
+      .findByIdAndUpdate(
+        id,
+        { $set: updateData },
+        { new: true, runValidators: true }
+      )
+      .select('-password')
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    return user;
+  }
 }

@@ -1,9 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Global exception filter for better error logging
+  app.useGlobalFilters(new AllExceptionsFilter());
 
   // Enable CORS for frontend
   app.enableCors({
@@ -34,4 +38,7 @@ async function bootstrap() {
   console.log(`🚀 MENTIS AI Backend is running on http://localhost:${port}/api`);
   console.log(`📚 Environment: ${process.env.NODE_ENV || 'development'}`);
 }
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('Failed to start application:', error);
+  process.exit(1);
+});

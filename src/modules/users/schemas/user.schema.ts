@@ -5,64 +5,73 @@ import * as bcrypt from 'bcrypt';
 export type UserDocument = User & Document;
 
 class StudentInfo {
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   currentEducationLevel: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: String })
   grade: string;
 
-  @Prop()
+  @Prop({ type: String })
   school?: string;
 
-  @Prop()
+  @Prop({ type: String })
   city?: string;
 
-  @Prop()
+  @Prop({ type: String })
   province?: string;
 
-  @Prop()
+  @Prop({ type: String })
   stream?: string;
 
-  @Prop([String])
+  @Prop({ type: [String] })
   subjects?: string[];
 
-  @Prop()
+  @Prop({ type: Number })
   cgpa?: number;
 
-  @Prop()
+  @Prop({ type: Number })
   percentage?: number;
 }
 
 class Preferences {
-  @Prop({ default: 'en' })
+  @Prop({ default: 'en', type: String })
   language: string;
 
-  @Prop({ default: true })
+  @Prop({ default: true, type: Boolean })
   notifications: boolean;
 
-  @Prop({ default: true })
+  @Prop({ default: true, type: Boolean })
   emailUpdates: boolean;
 }
 
 @Schema({ timestamps: true })
 export class User extends Document {
-  @Prop({ required: true, unique: true, lowercase: true, trim: true })
+  @Prop({ required: true, unique: true, lowercase: true, trim: true, type: String })
   email: string;
 
-  @Prop({ required: true, select: false })
+  @Prop({ required: true, select: false, type: String })
   password: string;
 
-  @Prop({ required: true, trim: true })
+  @Prop({ required: true, trim: true, type: String })
   firstName: string;
 
-  @Prop({ required: true, trim: true })
+  @Prop({ required: true, trim: true, type: String })
   lastName: string;
 
-  @Prop()
+  @Prop({ required: true, enum: ['student', 'admin'], default: 'student', type: String })
+  role: string;
+
+  @Prop({ type: String })
   phone?: string;
 
-  @Prop()
+  @Prop({ type: String })
   avatar?: string;
+
+  @Prop({ type: String })
+  bio?: string;
+
+  @Prop({ type: String })
+  dateOfBirth?: string;
 
   @Prop({ type: StudentInfo, required: true })
   studentInfo: StudentInfo;
@@ -70,19 +79,19 @@ export class User extends Document {
   @Prop({ type: Preferences, default: {} })
   preferences: Preferences;
 
-  @Prop({ default: false })
+  @Prop({ default: false, type: Boolean })
   onboardingCompleted: boolean;
 
-  @Prop({ default: true })
+  @Prop({ default: true, type: Boolean })
   isActive: boolean;
 
-  @Prop({ default: false })
+  @Prop({ default: false, type: Boolean })
   isVerified: boolean;
 
-  @Prop({ select: false })
+  @Prop({ select: false, type: String })
   verificationToken?: string;
 
-  @Prop()
+  @Prop({ type: Date })
   lastLoginAt?: Date;
 
   createdAt: Date;

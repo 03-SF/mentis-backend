@@ -36,7 +36,7 @@ export class AuthService {
     });
 
     // Generate tokens
-    const tokens = await this.generateTokens(user._id.toString(), user.email, 'student');
+    const tokens = await this.generateTokens(user._id.toString(), user.email, user.role || 'student');
 
     return {
       user: {
@@ -44,6 +44,7 @@ export class AuthService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        role: user.role || 'student',
         studentInfo: user.studentInfo,
       },
       ...tokens,
@@ -74,7 +75,7 @@ export class AuthService {
     await this.usersService.updateLastLogin(user._id.toString());
 
     // Generate tokens
-    const tokens = await this.generateTokens(user._id.toString(), user.email, 'student');
+    const tokens = await this.generateTokens(user._id.toString(), user.email, user.role || 'student');
 
     return {
       user: {
@@ -82,6 +83,7 @@ export class AuthService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        role: user.role || 'student',
         studentInfo: user.studentInfo,
         onboardingCompleted: user.onboardingCompleted,
       },
@@ -96,7 +98,7 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    return this.generateTokens(user._id.toString(), user.email, 'student');
+    return this.generateTokens(user._id.toString(), user.email, user.role || 'student');
   }
 
   private async generateTokens(userId: string, email: string, role: string) {
