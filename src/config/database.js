@@ -12,6 +12,8 @@ const connectDB = async () => {
     }
 
     const conn = await mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 30000, // Increase timeout for serverless
+      socketTimeoutMS: 45000,
       // These options are now default in Mongoose 6+
       // but included for clarity and compatibility
     });
