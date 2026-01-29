@@ -29,6 +29,11 @@ exports.getRecommendation = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'No assessment result found. Please take the assessment first.');
   }
 
+  // Fetch user preferences for career feasibility filtering
+  const { User } = require('../models');
+  const user = await User.findById(userId).select('preferences');
+  const userPreferences = user?.preferences || {};
+
   // Check if recommendation already exists
   let recommendation = await Recommendation.findOne({ userId });
   
@@ -202,6 +207,93 @@ exports.getRecommendation = asyncHandler(async (req, res) => {
       environment,
       pace
     });
+  }
+  
+  // STEP 3.5: Apply career feasibility filters based on user preferences
+  // Soft vetoes: reduce scores for careers that don't match practical preferences
+  console.log('Applying preferences-based feasibility filters...');
+  console.log('User preferences:', userPreferences);
+  
+  const PHYSICAL_WORK_CAREERS = [
+    'Armed Forces', 'Naval Services', 'Aviation & Pilot (Military)',
+    'Agriculture & Farming', 'Veterinary Medicine', 'Agricultural Engineering',
+    'Mining Engineering', 'Petroleum Engineering', 'Civil Engineering',
+    'Construction Management', 'Forestry', 'Plumbing', 'Electrical Work',
+    'Carpentry & Woodworking', 'Welding', 'Automotive Technician',
+    'HVAC Technician', 'Landscape Architecture', 'Sports & Athletics',
+    'Adventure Tourism', 'Wildlife Conservation'
+  ];
+  
+  const DEGREE_REQUIRED_CAREERS = [
+    'Medicine & Surgery', 'Dentistry', 'Pharmacy', 'Nursing', 'Veterinary Medicine',
+    'Law & Legal Practice', 'Corporate Law', 'Civil Engineering', 'Mechanical Engineering',
+    'Electrical Engineering', 'Software Engineering', 'Chemical Engineering',
+    'Biomedical Engineering', 'Aerospace Engineering', 'Architecture',
+    'University Professor', 'Chartered Accountancy', 'Investment Banking',
+    'Civil Services (CSS/PMS)', 'International Relations', 'Data Science & Analytics',
+    'Artificial Intelligence & ML', 'Cybersecurity', 'Psychology & Counseling'
+  ];
+  
+  const VOCATIONAL_CAREERS = [
+    'Plumbing', 'Electrical Work', 'Carpentry & Woodworking', 'Welding',
+    'Automotive Technician', 'HVAC Technician', 'Cosmetology & Beauty',
+    'Chef & Culinary Arts', 'Medical Laboratory Technology', 'Radiology & Imaging',
+    'Physical Therapy', 'Occupational Therapy', 'Graphic Design',
+    'Web Development', 'Mobile App Development', 'Photography & Videography',
+    'Fashion Design', 'Interior Design', 'Animation & VFX'
+  ];
+  
+  for (const career of matchedCareers) {
+    let scoreMultiplier = 1.0;
+    const adjustments = [];
+    
+    // Filter 1: Physical outdoor work preference
+    if (userPreferences.comfortableWithPhysicalWork === false) {
+      if (PHYSICAL_WORK_CAREERS.includes(career.career) || 
+          career.environment?.includes('outdoor')) {
+        scoreMultiplier *= 0.65; // Reduce score by 35%
+        adjustments.push('physical work mismatch (-35%)');
+      }
+    }
+    
+    // Filter 2: University degree preference
+    if (userPreferences.wantsUniversityDegree === false) {
+      if (DEGREE_REQUIRED_CAREERS.includes(career.career)) {
+        scoreMultiplier *= 0.70; // Reduce score by 30%
+        adjustments.push('degree requirement mismatch (-30%)');
+      }
+    }
+    
+    // Filter 3: Vocational careers preference
+    if (userPreferences.openToVocationalCareers === false) {
+      if (VOCATIONAL_CAREERS.includes(career.career)) {
+        scoreMultiplier *= 0.75; // Reduce score by 25%
+        adjustments.push('vocational path mismatch (-25%)');
+      }
+    }
+    
+    // Boost careers that match positive preferences
+    if (userPreferences.comfortableWithPhysicalWork === true) {
+      if (PHYSICAL_WORK_CAREERS.includes(career.career) || 
+          career.environment?.includes('outdoor')) {
+        scoreMultiplier *= 1.05; // Boost by 5%
+        adjustments.push('physical work preference match (+5%)');
+      }
+    }
+    
+    if (userPreferences.openToVocationalCareers === true) {
+      if (VOCATIONAL_CAREERS.includes(career.career)) {
+        scoreMultiplier *= 1.05; // Boost by 5%
+        adjustments.push('vocational preference match (+5%)');
+      }
+    }
+    
+    // Apply multiplier
+    if (scoreMultiplier !== 1.0) {
+      const originalScore = career.fitScore;
+      career.fitScore *= scoreMultiplier;
+      console.log(`${career.career}: ${Math.round(originalScore)} → ${Math.round(career.fitScore)} (${adjustments.join(', ')})`);
+    }
   }
   
   // Sort by fit score (highest first)

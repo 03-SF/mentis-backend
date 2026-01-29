@@ -42,15 +42,29 @@ exports.getQuestions = asyncHandler(async (req, res) => {
  * Submit test answers, compute scores, save results
  */
 exports.submitTest = asyncHandler(async (req, res) => {
-  const { answers } = req.body;
+  const { answers, preferences } = req.body;
   const userId = req.user._id;
 
   console.log('Submit assessment - User ID:', userId);
   console.log('Submit assessment - Answers count:', answers?.length);
+  console.log('Submit assessment - Preferences:', preferences);
 
   // Validation: Check answers array
   if (!answers || !Array.isArray(answers) || answers.length === 0) {
     throw new ApiError(400, 'Answers are required');
+  }
+
+  // Save preferences to user profile if provided
+  if (preferences) {
+    const { User } = require('../models');
+    await User.findByIdAndUpdate(userId, {
+      preferences: {
+        comfortableWithPhysicalWork: preferences.comfortableWithPhysicalWork,
+        wantsUniversityDegree: preferences.wantsUniversityDegree,
+        openToVocationalCareers: preferences.openToVocationalCareers
+      }
+    });
+    console.log('User preferences saved');
   }
 
   // Fetch all active questions

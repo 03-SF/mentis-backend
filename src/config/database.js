@@ -1,6 +1,15 @@
 const mongoose = require('mongoose');
 
+// Cache connection for serverless
+let cachedConnection = null;
+
 const connectDB = async () => {
+  // Return cached connection if it exists
+  if (cachedConnection && mongoose.connection.readyState === 1) {
+    console.log('✔ Using cached MongoDB connection');
+    return cachedConnection;
+  }
+
   try {
     const MONGODB_URI = process.env.MONGODB_URI;
     
@@ -14,31 +23,33 @@ const connectDB = async () => {
     const conn = await mongoose.connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 30000, // Increase timeout for serverless
       socketTimeoutMS: 45000,
+      maxPoolSize: 10,
+      minPoolSize: 2,
       // These options are now default in Mongoose 6+
       // but included for clarity and compatibility
     });
 
     console.log(`✔ MongoDB Connected: ${conn.connection.host}`);
+    cachedConnection = conn;
     
     // Handle connection events
     mongoose.connection.on('error', (err) => {
       console.error('MongoDB connection error:', err);
+      cachedConnection = null;
     });
 
     mongoose.connection.on('disconnected', () => {
       console.log('MongoDB disconnected');
+      cachedConnection = null;
     });
 
-    // Graceful shutdown
-    process.on('SIGINT', async () => {
-      await mongoose.connection.close();
-      console.log('MongoDB connection closed through app termination');
-      process.exit(0);
-    });
+    return conn;
+    return conn;
 
   } catch (error) {
     console.error('✖ Error connecting to MongoDB:', error.message);
     console.log('⚠ Server will continue without database connection');
+    cachedConnection = null;
     // Don't exit - allow server to run without DB
   }
 };

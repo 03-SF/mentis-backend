@@ -26,6 +26,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['student', 'admin'],
       default: 'student'
+    },
+    preferences: {
+      comfortableWithPhysicalWork: { type: Boolean, default: null },
+      wantsUniversityDegree: { type: Boolean, default: null },
+      openToVocationalCareers: { type: Boolean, default: null }
     }
   },
   {
