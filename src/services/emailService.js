@@ -2,11 +2,10 @@ const nodemailer = require('nodemailer');
 
 // Email configuration
 const createTransporter = () => {
-  // For development, use ethereal email (test email service)
-  // In production, replace with actual SMTP credentials (Gmail, SendGrid, etc.)
-  
-  if (process.env.NODE_ENV === 'production') {
-    // Production SMTP configuration
+  // Check if SMTP credentials are provided
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    // Use configured SMTP (works in both dev and production)
+    console.log('📧 Email service: Using configured SMTP');
     return nodemailer.createTransporter({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
@@ -17,7 +16,9 @@ const createTransporter = () => {
       },
     });
   } else {
-    // Development configuration - will log email instead of sending
+    // Fallback: Create test account on the fly for development
+    console.log('⚠️  Email service: No SMTP configured - emails will be logged only');
+    console.log('   Configure SMTP_USER and SMTP_PASS in .env to send real emails');
     return nodemailer.createTransporter({
       host: 'smtp.ethereal.email',
       port: 587,
