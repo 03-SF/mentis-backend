@@ -1,6 +1,7 @@
-const { Question, Response, Result, Recommendation } = require('../models');
+const { Question, Response, Result, Recommendation, User } = require('../models');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
+const { sendAssessmentResultsEmail, sendAdminAssessmentNotification } = require('../services/emailService');
 
 /**
  * GET /assessment/questions
@@ -150,6 +151,28 @@ exports.submitTest = asyncHandler(async (req, res) => {
     const { Recommendation } = require('../models');
     await Recommendation.deleteMany({ userId });
     console.log('Deleted old recommendations for user');
+
+    // Get user details for email
+    const user = await User.findById(userId);
+    
+    // Send assessment results email asynchronously (don't block response)
+    if (user && user.email) {
+      // Note: In a real implementation, you would generate the PDF here on the backend
+      // For now, we'll send email without PDF attachment
+      sendAssessmentResultsEmail(user.name, user.email, null).catch(err => {
+        console.error('Failed to send assessment results email:', err);
+      });
+
+      // Notify admin of assessment completion
+      sendAdminAssessmentNotification(
+        user.name, 
+        user.email, 
+        userId.toString(), 
+        result._id.toString()
+      ).catch(err => {
+        console.error('Failed to send admin assessment notification:', err);
+      });
+    }
 
     res.status(201).json({
       success: true,

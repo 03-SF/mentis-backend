@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const config = require('../config');
+const { sendWelcomeEmail, sendAdminSignupNotification } = require('../services/emailService');
 
 // Generate JWT token
 const generateToken = (userId) => {
@@ -43,6 +44,17 @@ exports.register = async (req, res, next) => {
 
     // Generate JWT token
     const token = generateToken(user._id);
+
+    // Send welcome email asynchronously (don't block registration)
+    sendWelcomeEmail(user.name, user.email).catch(err => {
+      console.error('Failed to send welcome email:', err);
+      // Don't fail registration if email fails
+    });
+
+    // Notify admin of new signup
+    sendAdminSignupNotification(user.name, user.email, user._id.toString()).catch(err => {
+      console.error('Failed to send admin notification:', err);
+    });
 
     res.status(201).json({
       success: true,

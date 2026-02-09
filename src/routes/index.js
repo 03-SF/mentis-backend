@@ -5,6 +5,7 @@ const assessmentRoutes = require('./assessmentRoutes');
 const recommendationRoutes = require('./recommendationRoutes');
 const learningPathRoutes = require('./learningPathRoutes');
 const adminRoutes = require('./adminRoutes');
+const contactRoutes = require('./contactRoutes');
 
 module.exports = (app) => {
   app.use('/api/auth', authRoutes);
@@ -14,6 +15,7 @@ module.exports = (app) => {
   app.use('/api/recommendation', recommendationRoutes);
   app.use('/api/learning-path', learningPathRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/contact', contactRoutes);
 
   // Health check route
   app.get('/api/health', (req, res) => {
