@@ -44,13 +44,11 @@ const connectDB = async () => {
     });
 
     return conn;
-    return conn;
 
   } catch (error) {
     console.error('✖ Error connecting to MongoDB:', error.message);
-    console.log('⚠ Server will continue without database connection');
     cachedConnection = null;
-    // Don't exit - allow server to run without DB
+    throw error; // Throw error to prevent server from starting without DB
   }
 };
 

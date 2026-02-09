@@ -12,9 +12,6 @@ const errorHandler = require('./middleware/errorHandler');
 // Initialize Express app
 const app = express();
 
-// Connect to MongoDB
-connectDB();
-
 // Security middleware
 app.use(helmet());
 
@@ -69,11 +66,26 @@ app._router.stack.forEach((r) => {
 // Error handling middleware (must be last)
 app.use(errorHandler);
 
-// Start server
-const PORT = config.port;
-app.listen(PORT, () => {
-  console.log(`Server running in ${config.nodeEnv} mode on port ${PORT}`);
-});
+// Start server function
+const startServer = async () => {
+  try {
+    // Connect to MongoDB first
+    await connectDB();
+    
+    // Then start the server
+    const PORT = config.port;
+    app.listen(PORT, () => {
+      console.log(`✔ Server running in ${config.nodeEnv} mode on port ${PORT}`);
+      console.log(`✔ Server is ready to accept requests`);
+    });
+  } catch (error) {
+    console.error('✖ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Start the server
+startServer();
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
