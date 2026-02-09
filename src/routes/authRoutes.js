@@ -43,4 +43,12 @@ router.post('/register', registerValidation, validate, authController.register);
 router.post('/login', loginValidation, validate, authController.login);
 router.get('/me', authMiddleware, authController.getCurrentUser);
 
+// Email verification routes
+router.get('/verify-email/:token', authController.verifyEmail);
+router.post('/resend-verification', 
+  [body('email').isEmail().withMessage('Please provide a valid email')],
+  validate,
+  authController.resendVerificationEmail
+);
+
 module.exports = router;

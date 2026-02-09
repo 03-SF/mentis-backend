@@ -1,7 +1,12 @@
 const { Question, Response, Result, Recommendation, User } = require('../models');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
-const { sendAssessmentResultsEmail, sendAdminAssessmentNotification } = require('../services/emailService');
+const { 
+  sendAssessmentStartedEmail,
+  sendAssessmentSubmittedEmail,
+  sendCareerReportEmail,
+  sendAdminAssessmentNotification 
+} = require('../services/emailService');
 
 /**
  * GET /assessment/questions
@@ -9,6 +14,21 @@ const { sendAssessmentResultsEmail, sendAdminAssessmentNotification } = require(
  */
 exports.getQuestions = asyncHandler(async (req, res) => {
   console.log('GET /assessment/questions - User:', req.user?._id);
+  
+  // Check if this is user's first time starting assessment
+  if (req.user) {
+    const existingResult = await Result.findOne({ userId: req.user._id });
+    
+    // If no existing results, this is their first assessment - send started email
+    if (!existingResult) {
+      const user = await User.findById(req.user._id);
+      if (user && user.email) {
+        sendAssessmentStartedEmail(user.name, user.email).catch(err => {
+          console.error('Failed to send assessment started email:', err);
+        });
+      }
+    }
+  }
   
   // Fetch all active questions
   const questions = await Question.find({ isActive: true }).lean();
@@ -155,15 +175,22 @@ exports.submitTest = asyncHandler(async (req, res) => {
     // Get user details for email
     const user = await User.findById(userId);
     
-    // Send assessment results email asynchronously (don't block response)
+    // Send assessment emails asynchronously (don't block response)
     if (user && user.email) {
-      // Note: In a real implementation, you would generate the PDF here on the backend
-      // For now, we'll send email without PDF attachment
-      sendAssessmentResultsEmail(user.name, user.email, null).catch(err => {
-        console.error('Failed to send assessment results email:', err);
+      // 1. Send assessment submitted confirmation (T7)
+      sendAssessmentSubmittedEmail(user.name, user.email).catch(err => {
+        console.error('Failed to send assessment submitted email:', err);
       });
 
-      // Notify admin of assessment completion
+      // 2. Send career report ready email with PDF (T10)
+      // Note: PDF can be generated on backend or received from frontend
+      // For MVP, we'll send email with download link to results page
+      const reportUrl = `${process.env.FRONTEND_URL || 'https://mentis-ai-tau.vercel.app'}/results`;
+      sendCareerReportEmail(user.name, user.email, null, reportUrl).catch(err => {
+        console.error('Failed to send career report email:', err);
+      });
+
+      // 3. Notify admin of assessment completion
       sendAdminAssessmentNotification(
         user.name, 
         user.email, 

@@ -1,7 +1,12 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/User');
 const config = require('../config');
-const { sendWelcomeEmail, sendAdminSignupNotification } = require('../services/emailService');
+const { 
+  sendWelcomeVerificationEmail, 
+  sendAccountCreatedEmail,
+  sendAdminSignupNotification 
+} = require('../services/emailService');
 
 // Generate JWT token
 const generateToken = (userId) => {
@@ -39,15 +44,21 @@ exports.register = async (req, res, next) => {
       name,
       email,
       password,
-      role: role || 'student'
+      role: role || 'student',
+      emailVerified: false,
+      promoOptIn: false // Default to false, user can opt-in later
     });
 
-    // Generate JWT token
+    // Generate email verification token
+    const verificationToken = user.generateVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Generate JWT token for immediate login (optional - some systems wait for verification)
     const token = generateToken(user._id);
 
-    // Send welcome email asynchronously (don't block registration)
-    sendWelcomeEmail(user.name, user.email).catch(err => {
-      console.error('Failed to send welcome email:', err);
+    // Send welcome + verification email asynchronously (don't block registration)
+    sendWelcomeVerificationEmail(user.name, user.email, verificationToken).catch(err => {
+      console.error('Failed to send verification email:', err);
       // Don't fail registration if email fails
     });
 
@@ -146,6 +157,108 @@ exports.getCurrentUser = async (req, res, next) => {
     res.json({
       success: true,
       data: { user }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Verify email address
+// @route   GET /api/auth/verify-email/:token
+// @access  Public
+exports.verifyEmail = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+
+    // Hash the token to match stored version
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    // Find user with valid token
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      verificationTokenExpires: { $gt: Date.now() }
+    }).select('+emailVerificationToken +verificationTokenExpires');
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired verification token'
+      });
+    }
+
+    // Mark email as verified
+    user.emailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.verificationTokenExpires = undefined;
+    await user.save();
+
+    // Send account created confirmation email
+    sendAccountCreatedEmail(user.name, user.email).catch(err => {
+      console.error('Failed to send account created email:', err);
+    });
+
+    res.json({
+      success: true,
+      message: 'Email verified successfully',
+      data: {
+        user: {
+          _id: user._id,
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          role: user.role
+        }
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Resend verification email
+// @route   POST /api/auth/resend-verification
+// @access  Public
+exports.resendVerificationEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide email address'
+      });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'No user found with that email'
+      });
+    }
+
+    if (user.emailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified'
+      });
+    }
+
+    // Generate new verification token
+    const verificationToken = user.generateVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    // Send verification email
+    await sendWelcomeVerificationEmail(user.name, user.email, verificationToken);
+
+    res.json({
+      success: true,
+      message: 'Verification email sent successfully'
     });
   } catch (error) {
     next(error);
