@@ -18,7 +18,7 @@ const createTransporter = () => {
   if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     // Use configured SMTP (works in both dev and production)
     console.log('📧 Email service: Using configured SMTP');
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: false, // true for 465, false for other ports
@@ -31,7 +31,7 @@ const createTransporter = () => {
     // Fallback: Create test account on the fly for development
     console.log('⚠️  Email service: No SMTP configured - emails will be logged only');
     console.log('   Configure SMTP_USER and SMTP_PASS in .env to send real emails');
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: 'smtp.ethereal.email',
       port: 587,
       secure: false,
