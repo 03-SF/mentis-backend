@@ -8,7 +8,7 @@ async function resetStudentPassword() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ Connected to MongoDB\n');
 
-    const email = 'sumrunfatima57@gmail.com';
+    const email = 'student@example.com'; // Change this to the student's email
     const newPassword = '12345678';
 
     const student = await User.findOne({ email });
