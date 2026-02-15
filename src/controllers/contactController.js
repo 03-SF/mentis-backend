@@ -1,4 +1,4 @@
-const { sendEmail, emailTemplates } = require('../services/emailService');
+const { sendEmail, emailTemplates, sendPDFEmail: sendPDFEmailService } = require('../services/emailService');
 
 // Handle contact form submission
 const submitContactForm = async (req, res) => {
@@ -66,8 +66,13 @@ const sendPDFEmail = async (req, res) => {
       });
     }
 
-    const pdfTemplate = emailTemplates.pdfDelivery(name, documentType, pdfBuffer);
-    const result = await sendEmail(email, pdfTemplate);
+    // Convert base64 string to buffer if needed
+    let pdfData = pdfBuffer;
+    if (typeof pdfBuffer === 'string') {
+      pdfData = Buffer.from(pdfBuffer, 'base64');
+    }
+
+    const result = await sendPDFEmailService(name, email, documentType, pdfData);
 
     if (result.success) {
       res.status(200).json({

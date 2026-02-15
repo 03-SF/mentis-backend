@@ -144,6 +144,27 @@ const sendAssessmentResultsEmail = async (name, email, pdfBuffer) => {
   return await sendCareerReportEmail(name, email, pdfBuffer);
 };
 
+/**
+ * Send PDF via email
+ * @param {string} name - Recipient name
+ * @param {string} email - Recipient email
+ * @param {string} documentType - Type of document (e.g., "Career Assessment Report")
+ * @param {Buffer} pdfBuffer - PDF file buffer
+ * @returns {Promise<{success: boolean, messageId?: string, error?: string}>}
+ */
+const sendPDFEmail = async (name, email, documentType, pdfBuffer) => {
+  const template = templates.pdfDelivery(name, documentType);
+  
+  // Add PDF as attachment
+  template.attachments = [{
+    filename: `${documentType}.pdf`,
+    content: pdfBuffer,
+    contentType: 'application/pdf'
+  }];
+  
+  return await sendEmail(email, template, EMAIL_TYPES.TRANSACTIONAL);
+};
+
 module.exports = {
   // Email type constants
   EMAIL_TYPES,
@@ -159,6 +180,10 @@ module.exports = {
   sendCareerReportEmail,
   sendAdminSignupNotification,
   sendAdminAssessmentNotification,
+  sendPDFEmail,
+  
+  // Templates object for direct access
+  emailTemplates: templates,
   
   // Legacy functions (for backward compatibility)
   sendWelcomeEmail,

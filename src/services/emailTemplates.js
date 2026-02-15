@@ -574,6 +574,44 @@ const templates = {
       subject: `📊 Assessment Completed - ${userName}`,
       html: emailLayout(content, { emailType: 'transactional' })
     };
+  },
+
+  /**
+   * PDF Delivery Email
+   * Trigger: User requests PDF report via email
+   */
+  pdfDelivery: (name, documentType) => {
+    const content = `
+      <h1 style="color: #14b8a6; margin-top: 0;">Your ${documentType} is Ready! 📄</h1>
+      
+      <p style="font-size: 16px;">
+        Hi <strong>${name}</strong>,
+      </p>
+
+      <p>
+        Your <strong>${documentType}</strong> has been generated and is attached to this email.
+      </p>
+
+      <div style="background: #f0fdfa; border-left: 4px solid #14b8a6; padding: 20px; margin: 25px 0; border-radius: 4px;">
+        <p style="margin: 0;">
+          📎 <strong>Attachment:</strong> ${documentType}.pdf
+        </p>
+      </div>
+
+      <p style="color: #64748b;">
+        If you have any questions about your report or need assistance, please don't hesitate to reach out to our support team.
+      </p>
+
+      <p style="margin-top: 30px;">
+        Best regards,<br>
+        <strong>The MENTIS Team</strong>
+      </p>
+    `;
+
+    return {
+      subject: `📄 Your ${documentType} is Ready - MENTIS`,
+      html: emailLayout(content, { emailType: 'transactional' })
+    };
   }
 };
 
