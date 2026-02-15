@@ -49,7 +49,7 @@ const sendEmail = async (to, template, emailType = EMAIL_TYPES.TRANSACTIONAL) =>
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: '"MENTIS Career Guide" <noreply@mentisera.pk>',
+      from: '"MENTIS Career Guide" <hello@mentisera.pk>',
       to: to,
       subject: template.subject,
       html: template.html,
